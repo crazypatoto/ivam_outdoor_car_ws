@@ -1,0 +1,9 @@
+[submodule "src/sick_scan"]
+	path = src/sick_scan
+	url = https://github.com/SICKAG/sick_scan
+[submodule "src/hector_slam"]
+	path = src/hector_slam
+	url = https://github.com/tu-darmstadt-ros-pkg/hector_slam
+[submodule "src/ira_laser_tools"]
+	path = src/ira_laser_tools
+	url = https://github.com/iralabdisco/ira_laser_tools

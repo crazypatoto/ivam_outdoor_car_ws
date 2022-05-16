@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+
+<launch>
+  <param name="/use_sim_time" value="false" />
+
+  <!--include file="$(find simulation_environment)/launch/apartment.launch"/-->
+
+
+  <node name="joystick" pkg="JoyStick" type="joystick" args="/dev/input/js0" />
+  <node name="move_robot" pkg="move_robot" type="move_robot" args="/dev/ttyACM0 115200" output="screen" />
+
+
+  <node pkg="tf" type="static_transform_publisher" name="scanner1_to_base" args="-0.15 0.25 0 0.785398163 0 0 base_link laser_1 100" />
+  <node pkg="tf" type="static_transform_publisher" name="scanner2_to_base" args="0.15 -0.25 0 -2.35619449 0 0 base_link laser_2 100" />
+  <node name="sick_tim_5xx_1" pkg="sick_scan" type="sick_generic_caller" respawn="false" output="screen">
+    <param name="scanner_type" type="string" value="sick_tim_5xx" />
+    <param name="frame_id" value="/laser_1" />
+    <param name="min_ang" type="double" value="-2.35619449" /> <!-- -135° -->
+    <param name="max_ang" type="double" value="2.35619449" /> <!-- 135° -->
+    <param name="range_max" type="double" value="100.0" />
+    <param name="intensity" type="bool" value="True" />
+    <param name="hostname" type="string" value="192.168.0.16" />
+    <param name="port" type="string" value="2112" />
+    <param name="timelimit" type="int" value="5" />
+    <param name="min_intensity" type="double" value="0.0" /> <!-- Set range of LaserScan messages to infinity, if intensity < min_intensity (default: 0) -->
+    <remap from="scan" to="scan_1" />
+    <remap from="cloud" to="cloud_1" />
+  </node>
+  <node name="sick_tim_5xx_2" pkg="sick_scan" type="sick_generic_caller" respawn="false" output="screen">
+    <param name="scanner_type" type="string" value="sick_tim_5xx" />
+    <param name="frame_id" value="/laser_2" />
+    <param name="min_ang" type="double" value="-2.35619449" /> <!-- -135° -->
+    <param name="max_ang" type="double" value="2.35619449" /> <!-- 135° -->
+    <param name="range_max" type="double" value="100.0" />
+    <param name="intensity" type="bool" value="True" />
+    <param name="hostname" type="string" value="192.168.0.15" />
+    <param name="port" type="string" value="2112" />
+    <param name="timelimit" type="int" value="5" />
+    <param name="min_intensity" type="double" value="0.0" /> <!-- Set range of LaserScan messages to infinity, if intensity < min_intensity (default: 0) -->
+    <remap from="scan" to="scan_2" />
+    <remap from="cloud" to="cloud_2" />
+  </node>
+  <node pkg="ira_laser_tools" name="laserscan_multi_merger" type="laserscan_multi_merger" output="screen">
+    <param name="destination_frame" value="/base_link" />
+    <param name="cloud_destination_topic" value="/cloud" />
+    <param name="scan_destination_topic" value="/scan" />
+    <param name="laserscan_topics" value="/scan_1 /scan_2" /> <!-- LIST OF THE LASER SCAN TOPICS TO SUBSCRIBE -->
+    <param name="angle_min" value="-3.14159265359" />
+    <param name="angle_max" value="3.14159265359" />
+    <param name="angle_increment" value="0.0058" />
+    <param name="scan_time" value="0.0333333" />
+    <param name="range_min" value="0.30" />
+    <param name="range_max" value="100.0" />
+  </node>
+
+
+  <!-- Hector mapping -->
+  <node pkg="hector_mapping" type="hector_mapping" name="hector_mapping" output="screen">
+    <!-- Frame names -->
+    <param name="map_frame" value="map" />
+    <param name="odom_frame" value="base_link" />
+    <param name="base_frame" value="base_link" />
+
+    <!-- Tf use -->
+    <param name="use_tf_scan_transformation" value="true" />
+    <param name="use_tf_pose_start_estimate" value="false" />
+    <param name="pub_map_scanmatch_transform" value="true" />
+    <param name="pub_map_odom_transform" value="true" />
+    <param name="tf_map_scanmatch_transform_frame_name" value="scanmatcher_frame" />
+
+    <!-- Map size / start point -->
+    <param name="map_resolution" value="0.050" />
+    <param name="map_size" value="2048" />
+    <param name="map_start_x" value="0.5" />
+    <param name="map_start_y" value="0.5" />
+    <param name="map_multi_res_levels" value="2" />
+
+    <!-- Map update parameters -->
+    <param name="update_factor_free" value="0.4" />
+    <param name="update_factor_occupied" value="0.9" />
+    <param name="map_update_distance_thresh" value="0.1" />
+    <param name="map_update_angle_thresh" value="0.04" />
+    <param name="map_pub_period" value="2" />
+    <param name="laser_z_min_value" value="-0.1" />
+    <param name="laser_z_max_value" value="0.1" />
+    <param name="laser_min_dist" value="0.12" />
+    <param name="laser_max_dist" value="3.5" />
+
+    <!-- Advertising config -->
+    <param name="advertise_map_service" value="true" />
+    <param name="scan_subscriber_queue_size" value="5" />
+    <param name="scan_topic" value="scan" />
+
+    <!-- Debug parameters -->
+    <!--
+      <param name="output_timing"    value="false"/>
+      <param name="pub_drawings"     value="true"/>
+      <param name="pub_debug_output" value="true"/>
+    -->
+  </node>
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find hector_slam_launch)/rviz_cfg/mapping_demo.rviz" />
+  <include file="$(find hector_geotiff_launch)/launch/geotiff_mapper.launch">
+    <arg name="trajectory_source_frame_name" value="scanmatcher_frame" />
+    <arg name="map_file_path" value="$(find hector_geotiff)/maps" />
+  </include>
+
+
+</launch>
