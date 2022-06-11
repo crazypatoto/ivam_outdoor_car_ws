@@ -3099,4 +3099,3 @@ void diff_vw::Stop()
 	SendPackage(command);
 
 }
-float W_rw = (sin(us)/L)*joystick_v;

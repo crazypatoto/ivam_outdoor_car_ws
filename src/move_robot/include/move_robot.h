@@ -52,8 +52,8 @@
 
 
 
-#define CarParameterPATH "/home/darren/ivam_outdoor_car_ws/src/move_robot/parameter/car_parameter"
-#define LocalparPATH "/home/darren/ivam_outdoor_car_ws/src/move_robot/parameter/local_parameter"
+#define CarParameterPATH "/home/tra/ivam_outdoor_car_ws/src/move_robot/parameter/car_parameter"
+#define LocalparPATH "/home/tra/ivam_outdoor_car_ws/src/move_robot/parameter/local_parameter"
 
 #define PUSE_BUTTON_A 0
 #define PUSE_BUTTON_B 1
